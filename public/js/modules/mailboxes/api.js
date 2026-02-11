@@ -146,11 +146,20 @@ export async function setFavorite(mailboxId, isFavorite) {
   });
 }
 
+/**
+ * 删除全部邮箱
+ * @returns {Promise<Response>}
+ */
+export async function deleteAllMailboxes() {
+  return api('/api/mailboxes/delete-all', { method: 'DELETE' });
+}
+
 export default {
   api,
   loadMailboxes,
   loadDomains,
   deleteMailbox,
+  deleteAllMailboxes,
   resetPassword,
   changePassword,
   toggleLogin,

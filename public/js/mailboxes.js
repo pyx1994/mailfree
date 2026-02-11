@@ -5,7 +5,7 @@
 
 import { getCurrentUserKey } from './storage.js';
 import { openForwardDialog, toggleFavorite, batchSetFavorite, injectDialogStyles } from './mailbox-settings.js';
-import { api, loadMailboxes as fetchMailboxes, loadDomains as fetchDomains, deleteMailbox as apiDeleteMailbox, toggleLogin as apiToggleLogin, batchToggleLogin, resetPassword as apiResetPassword, changePassword as apiChangePassword } from './modules/mailboxes/api.js';
+import { api, loadMailboxes as fetchMailboxes, loadDomains as fetchDomains, deleteMailbox as apiDeleteMailbox, deleteAllMailboxes as apiDeleteAllMailboxes, toggleLogin as apiToggleLogin, batchToggleLogin, resetPassword as apiResetPassword, changePassword as apiChangePassword } from './modules/mailboxes/api.js';
 import { formatTime, escapeHtml, generateSkeleton, renderGrid, renderList } from './modules/mailboxes/render.js';
 
 injectDialogStyles();
@@ -59,7 +59,14 @@ const els = {
   passwordNewInput: document.getElementById('password-new-input'),
   passwordShowToggle: document.getElementById('password-show-toggle'),
   passwordModalCancel: document.getElementById('password-modal-cancel'),
-  passwordModalConfirm: document.getElementById('password-modal-confirm')
+  passwordModalConfirm: document.getElementById('password-modal-confirm'),
+  // 删除全部
+  deleteAll: document.getElementById('delete-all'),
+  deleteAllModal: document.getElementById('delete-all-modal'),
+  deleteAllClose: document.getElementById('delete-all-close'),
+  deleteAllInput: document.getElementById('delete-all-input'),
+  deleteAllCancel: document.getElementById('delete-all-cancel'),
+  deleteAllConfirm: document.getElementById('delete-all-confirm')
 };
 
 // 状态
@@ -472,6 +479,43 @@ els.passwordNewInput?.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
     executePasswordAction();
+  }
+});
+
+// 删除全部邮箱
+els.deleteAll?.addEventListener('click', () => {
+  if (els.deleteAllInput) els.deleteAllInput.value = '';
+  if (els.deleteAllConfirm) els.deleteAllConfirm.disabled = true;
+  if (els.deleteAllModal) els.deleteAllModal.style.display = 'flex';
+});
+els.deleteAllClose?.addEventListener('click', () => { if (els.deleteAllModal) els.deleteAllModal.style.display = 'none'; });
+els.deleteAllCancel?.addEventListener('click', () => { if (els.deleteAllModal) els.deleteAllModal.style.display = 'none'; });
+els.deleteAllModal?.addEventListener('click', (e) => { if (e.target === els.deleteAllModal) els.deleteAllModal.style.display = 'none'; });
+els.deleteAllInput?.addEventListener('input', () => {
+  if (els.deleteAllConfirm) els.deleteAllConfirm.disabled = (els.deleteAllInput.value.trim() !== 'DELETE ALL');
+});
+els.deleteAllConfirm?.addEventListener('click', async () => {
+  if (els.deleteAllInput?.value.trim() !== 'DELETE ALL') return;
+  els.deleteAllConfirm.disabled = true;
+  els.deleteAllConfirm.textContent = '删除中...';
+  try {
+    const res = await apiDeleteAllMailboxes();
+    if (res.ok) {
+      const data = await res.json();
+      showToast(`已删除全部邮箱（共 ${data.deleted} 个）`, 'success');
+      if (els.deleteAllModal) els.deleteAllModal.style.display = 'none';
+      page = 1;
+      load();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || '删除失败', 'error');
+    }
+  } catch (e) {
+    showToast('删除失败: ' + (e.message || '未知错误'), 'error');
+  } finally {
+    els.deleteAllConfirm.textContent = '确定删除全部';
+    els.deleteAllConfirm.disabled = true;
+    if (els.deleteAllInput) els.deleteAllInput.value = '';
   }
 });
 

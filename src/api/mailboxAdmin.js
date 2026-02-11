@@ -292,6 +292,22 @@ export async function handleMailboxAdminApi(request, db, url, path, options) {
     return await handleBatchForwardByAddress(request, { TEMP_MAIL_DB: db });
   }
 
+  // 一键删除全部邮箱
+  if (path === '/api/mailboxes/delete-all' && request.method === 'DELETE') {
+    if (isMock) return errorResponse('演示模式不可删除', 403);
+    if (!isStrictAdmin(request, options)) return errorResponse('Forbidden', 403);
+    try {
+      await db.prepare('DELETE FROM messages').run();
+      await db.prepare('DELETE FROM user_mailboxes').run();
+      const result = await db.prepare('DELETE FROM mailboxes').run();
+      const count = result?.meta?.changes || 0;
+      invalidateSystemStatCache('total_mailboxes');
+      return Response.json({ success: true, deleted: count });
+    } catch (e) {
+      return errorResponse('删除失败: ' + e.message, 500);
+    }
+  }
+
   // 邮箱密码修改（邮箱用户自己修改）
   if (path === '/api/mailbox/password' && request.method === 'PUT') {
     if (isMock) return errorResponse('演示模式不可修改密码', 403);

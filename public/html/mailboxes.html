@@ -81,6 +81,9 @@
               <button id="batch-clear-forward" class="btn btn-ghost btn-sm" title="批量清除转发">
                 <span class="btn-icon">🚫</span><span>清除转发</span>
               </button>
+              <button id="delete-all" class="btn btn-ghost btn-sm" title="一键删除全部邮箱" style="color:#ef4444">
+                <span class="btn-icon">🗑️</span><span>删除全部</span>
+              </button>
             </div>
             <div class="view-toggle">
               <button id="view-grid" class="btn btn-ghost btn-sm active" title="卡片网格视图">
@@ -352,6 +355,30 @@
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <!-- 删除全部邮箱确认框 -->
+  <div class="modal" id="delete-all-modal" style="display:none">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <div>
+          <span class="modal-icon">⚠️</span>
+          <span>删除全部邮箱</span>
+        </div>
+        <button id="delete-all-close" class="close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin:0 0 12px 0;color:#dc2626;font-weight:600">此操作将删除系统中所有邮箱及其邮件，不可恢复！</p>
+        <p style="margin:0 0 16px 0;color:#334155">请输入 <strong>DELETE ALL</strong> 确认删除：</p>
+        <input id="delete-all-input" class="form-input" placeholder="请输入 DELETE ALL"
+               style="width:100%;padding:10px 12px;border:1px solid rgba(226, 232, 240, 0.8);border-radius:8px;font-size:14px;background:rgba(255,255,255,0.9);" />
+        <div style="margin-top:16px;display:flex;gap:12px;justify-content:flex-end">
+          <button id="delete-all-cancel" class="btn btn-secondary">取消</button>
+          <button id="delete-all-confirm" class="btn btn-danger" disabled>确定删除全部</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/toast-utils.js"></script>
   <script type="module" src="/js/mailboxes.js"></script>
 </body>
